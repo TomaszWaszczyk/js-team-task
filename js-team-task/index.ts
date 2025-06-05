@@ -1,15 +1,14 @@
-import { getHours, getMinutes } from 'date-fns';
-import { sortBy } from 'lodash';
+import { getHours, getMinutes } from "date-fns";
 
 interface TimeRange {
   from: Date;
   to: Date;
 }
 
-interface CollisionItem<T> {
+export interface CollisionResult<T> {
+  item: T;
   left: number;
   width: number;
-  item: T;
 }
 
 /**
@@ -29,12 +28,15 @@ function isCollides(a: TimeRange, b: TimeRange) {
   const bTime = dateToMinutes(b.to) - bFrom;
 
   return aFrom < bFrom + bTime && aFrom + aTime > bFrom;
-};
+}
 
 /**
  * Grupuje pozycje, które nachodzą na siebie w czasie.
  */
-function groupByCollisions<T>(array: T[], getTimeRange: (item: T) => TimeRange): T[][] {
+function groupByCollisions<T>(
+  array: T[],
+  getTimeRange: (item: T) => TimeRange
+): T[][] {
   const groups: T[][] = [];
   groups[0] = [];
 
@@ -76,17 +78,60 @@ function groupByCollisions<T>(array: T[], getTimeRange: (item: T) => TimeRange):
 /**
  * Oblicza wartość top i left dla pozycji w tablicy aby nie kolidowały ze sobą.
  */
-export function resolveTimeCollisions<T>(array: T[], getTimeRange: (item: T) => TimeRange): CollisionItem<T>[] {
-  return groupByCollisions(array, getTimeRange).flatMap(group => {
-    return group.map((item, itemIndex) => {
-      const width = 1 / group.length;
-      const left = itemIndex * width;
+export function resolveTimeCollisions<T>(
+  events: T[],
+  getTime: (event: T) => { from: Date; to: Date }
+): CollisionResult<T>[] {
+  // Sortuje wydarzenia chronologicznie
+  const sortedEvents = [...events].sort((a, b) => {
+    const aTime = getTime(a);
+    const bTime = getTime(b);
+    return (
+      aTime.from.getTime() - bTime.from.getTime() ||
+      bTime.to.getTime() - aTime.to.getTime()
+    );
+  });
 
-      return {
-        left,
-        width,
-        item
-      };
-    })
-  })
-}
+  // Tworzę sobie grupy kolidujących wydarzeń
+  const collisionGroups = groupByCollisions(sortedEvents, getTime);
+
+  const results: CollisionResult<T>[] = [];
+
+  // Oblicza układ kolumn dla każdej grupy kolidujących wydarzeń
+  for (const group of collisionGroups) {
+    const columns: T[][] = [];
+
+    // Przypisuje wydarzenia do kolumn
+    for (const event of group) {
+      const eventStart = getTime(event).from;
+      let placed = false;
+
+      // Znajduje pierwszą kolumnę, w której ostatnie wydarzenie kończy się przed rozpoczęciem bieżącego wydarze
+      for (const column of columns) {
+        const lastEvent = column[column.length - 1];
+        const lastEnd = getTime(lastEvent).to;
+
+        if (eventStart >= lastEnd) {
+          column.push(event);
+          placed = true;
+          break;
+        }
+      }
+
+      if (!placed) columns.push([event]);
+    }
+
+    // Oblicza pozycje na podstawie liczby kolumn
+    const columnCount = columns.length;
+    columns.forEach((column, columnIndex) => {
+      const left = columnIndex / columnCount;
+      const width = 1 / columnCount;
+
+      column.forEach((event) => {
+        results.push({ item: event, left, width });
+      });
+    });
+  }
+
+  return results;
+};
