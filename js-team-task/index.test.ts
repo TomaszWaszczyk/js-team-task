@@ -20,11 +20,11 @@ const events = [
   createEvent('G', { fromTime: '13:00', toTime: '14:00' }),
 ];
 
-const collitions = resolveTimeCollisions(events, event => ({
+const collisions = resolveTimeCollisions(events, event => ({
   from: new Date(event.dateFrom),
   to: new Date(event.dateTo)
 }));
-const [a, b, c, d, e, f, g] = sortBy(collitions, x => x.item.id);
+const [a, b, c, d, e, f, g] = sortBy(collisions, x => x.item.id);
 
 test('A i B powinny być równe i zajmować 50%.', () => {
   expect(a.width).toEqual(b.width);
@@ -69,9 +69,9 @@ test('E, F i G powinny być umieszczone obok siebie w jednym rzędzie i zajmowa�
 });
 
 describe('Każde wydarzenie powinno mieścić się na ekranie.', () => { 
-  for (const collition of collitions) {
-    test(`${collition.item.id} powinno mieścić się na ekranie.`, () => {
-      expect(collition.left + collition.width).toBeLessThanOrEqual(1);
+  for (const collision of collisions) {
+    test(`${collision.item.id} powinno mieścić się na ekranie.`, () => {
+      expect(collision.left + collision.width).toBeLessThanOrEqual(1);
     })
   }
 });

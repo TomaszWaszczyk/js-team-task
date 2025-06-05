@@ -13,7 +13,7 @@ interface Dto {
 }
 ```
 
-Kolizje prezentowane są poziomowo, więc interesują nas głównie parametry `left` oraz `width` (wydarzenia kolidują ze sobą jeżeli ich czas `dateFrom` i `dateTo` się pokrywa).
+Kolizje prezentowane są poziomo, więc interesują nas głównie parametry `left` oraz `width` (wydarzenia kolidują ze sobą jeżeli ich czas `dateFrom` i `dateTo` się pokrywa).
 Np. aby umieścić cztery wydarzenia obok siebie, wartości muszą prezentować się następująco:
 ```
 [
@@ -29,6 +29,7 @@ Aby wszystkie wydarzenia mieściły się na ekranie suma `left` i `width` nie mo
 # Zadanie
 
 ### Dane wejściowe:
+
 * A = 08:00 - 09:00  
 * B = 08:30 - 10:30  
 * C = 10:00 - 11:00  
