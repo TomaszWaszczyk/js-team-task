@@ -106,7 +106,7 @@ export function resolveTimeCollisions<T>(
       const eventStart = getTime(event).from;
       let placed = false;
 
-      // Znajduje pierwszą kolumnę, w której ostatnie wydarzenie kończy się przed rozpoczęciem bieżącego wydarze
+      // Znajduje pierwszą kolumnę, w której ostatnie wydarzenie kończy się przed rozpoczęciem bieżącego wydarzenia
       for (const column of columns) {
         const lastEvent = column[column.length - 1];
         const lastEnd = getTime(lastEvent).to;
